@@ -55,7 +55,7 @@ router.get("/", async (ctx, next) => {
       for (let i = 0; i < that.arr.length; i++) {
         fs.appendFile(
           "output.md",
-          i + "[" + that.arr[i].title + "]" + "[" + that.arr[i].url + "]</br>",
+          i + ". [" + that.arr[i].title + "]" + "(" + that.arr[i].url + ")</br>",
           (err) => {
             if (err) {
               console.error(err);
