@@ -36,7 +36,9 @@ router.get("/", async (ctx, next) => {
         let $element = $(element);
         that.arr.push({
           title: $element.find(".td-02").find("a").text(),
-          url: $element.find(".td-02").find("a").attr("href"),
+          url:
+            $element.find(".td-02").find("a").attr("href_to") ||
+            $element.find(".td-02").find("a").attr("href"),
         });
       });
 
@@ -55,7 +57,14 @@ router.get("/", async (ctx, next) => {
       for (let i = 0; i < that.arr.length; i++) {
         fs.appendFile(
           "output.md",
-          i + ". [" + that.arr[i].title + "]" + "(" + that.arr[i].url + ")</br>",
+          i +
+            1 +
+            ".[" +
+            that.arr[i].title +
+            "]" +
+            "(https://s.weibo.com" +
+            that.arr[i].url +
+            ")</br>",
           (err) => {
             if (err) {
               console.error(err);
