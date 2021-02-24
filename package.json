@@ -22,6 +22,7 @@
     "koa": "^2.13.1",
     "koa-router": "^10.0.0",
     "mysql": "^2.18.1",
+    "node-schedule": "^2.0.0",
     "path": "^0.12.7",
     "superagent": "^6.1.0",
     "superagent-charset": "^1.2.0"
