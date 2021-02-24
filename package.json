@@ -17,10 +17,12 @@
   "license": "ISC",
   "dependencies": {
     "cheerio": "^1.0.0-rc.5",
+    "fs": "0.0.1-security",
     "knex": "^0.21.17",
     "koa": "^2.13.1",
     "koa-router": "^10.0.0",
     "mysql": "^2.18.1",
+    "path": "^0.12.7",
     "superagent": "^6.1.0",
     "superagent-charset": "^1.2.0"
   }
