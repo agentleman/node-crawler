@@ -6,6 +6,8 @@ const superagent = charset(require("superagent")); //发送请求模块 一个�
 const fs = require("fs");
 const path = require("path");
 const schedule = require("node-schedule");
+const _ = require("lodash");
+const moment = require("moment");
 
 const App = new Koa();
 const router = new Router();
@@ -14,7 +16,6 @@ var j;
 
 router.get("/", async (ctx, next) => {
   let url = "https://s.weibo.com/top/summary?cate=realtimehot"; //target地址
-  // let url = "https://segmentfault.com/a/1190000016655289"; //target地址
   superagent
     .get(url)
     .charset("utf-8")
@@ -43,39 +44,7 @@ router.get("/", async (ctx, next) => {
             $element.find(".td-02").find("a").attr("href"),
         });
       });
-
-      fs.writeFile(
-        path.join(
-          path.resolve(__dirname, "../"),
-          "node-crawler/hot/output.txt"
-        ),
-        "### 今日热点",
-        (err) => {
-          if (err) {
-            console.log(err);
-          }
-        }
-      );
-      for (let i = 0; i < that.arr.length; i++) {
-        fs.appendFile(
-          "output.md",
-          i +
-            1 +
-            ".[" +
-            that.arr[i].title +
-            "]" +
-            "(https://s.weibo.com" +
-            that.arr[i].url +
-            ")</br>",
-          (err) => {
-            if (err) {
-              console.error(err);
-              return;
-            }
-            //完成！
-          }
-        );
-      }
+      getDayFile(that.arr);
     });
   // await next()
   ctx.response.body = this.arr;
@@ -109,7 +78,6 @@ function query_hot() {
             $element.find(".td-02").find("a").attr("href"),
         });
       });
-      console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" + arr);
     });
 }
 
@@ -117,7 +85,7 @@ App.use(router.routes()).use(router.allowedMethods());
 
 //隔一小时页面提取一次
 function scheduleSetHour() {
-  //定制器规则参数 一次是 秒、分、时、月、年、周几
+  //定制器规则参数 依次是 秒、分、时、月、年、周几 留星号默认每秒执行一次
   j = schedule.scheduleJob("* * * * * *", function () {
     query_hot();
   });
@@ -126,32 +94,46 @@ scheduleSetHour();
 
 //隔一天汇总一次当天提取结果
 function scheduleSetDay() {
-  // j.cancel()
-  // var dj = schedule.scheduleJob("5 * * * * *", function () {
-  //   j.cancel()
-  //   arr = [];
-  // });
   setInterval(function () {
     j.cancel();
-    console.log(arr.length);
-    temp = [];
-    for (let i = 0; i < arr.length; i++) {
-      for (let j = 0; j < temp.length; j++) {
-        if (i == 0) {
-          console.log(i)
-          temp.push(arr[0]);
-        } else {
-          if(temp[j].title !== arr[i].title){
-            temp.push(arr[i])
-          }
-        }
-      }
-    }
-
-    console.log(temp.length);
-  }, 3000);
+    //使用lodash的isEqual方法去重
+    console.log(arr.length)
+    var uniqHolderArr = _.uniqWith(arr, _.isEqual);
+    getDayFile(uniqHolderArr);
+    arr = [];
+    scheduleSetHour()
+  }, 50000);
 }
 scheduleSetDay();
+
+// 生成汇总文件
+var is = 0
+function getDayFile(infoArr) {
+  let dateNow = moment(new Date().getTime()).format("YYYY-MM-DD");
+  writeIn(0, dateNow+'热点', infoArr);
+}
+function writeIn(count, dateNow, infoArr) {
+  count =  Number(count)
+  if (count === infoArr.length-1) return;
+  fs.appendFileSync(
+    "hot/" + dateNow + ".md",
+    count +1+
+      ".[" +
+      infoArr[count].title +
+      "]" +
+      "(https://s.weibo.com" +
+      infoArr[count].url +
+      ")</br>",
+    (err) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+    }
+  );
+  count++;
+  writeIn(count, dateNow, infoArr);
+}
 
 App.listen("8088", () => {
   console.log("8088");
