@@ -12,7 +12,7 @@ const moment = require("moment");
 const App = new Koa();
 const router = new Router();
 var arr = [];
-var j;
+var j, h;
 
 router.get("/", async (ctx, next) => {
   let url = "https://s.weibo.com/top/summary?cate=realtimehot"; //target地址
@@ -86,7 +86,7 @@ App.use(router.routes()).use(router.allowedMethods());
 //隔一小时页面提取一次
 function scheduleSetHour() {
   //定制器规则参数 依次是 秒、分、时、月、年、周几 留星号默认每秒执行一次
-  j = schedule.scheduleJob("* * * * * *", function () {
+  j = schedule.scheduleJob("59 1 * * * *", function () {
     query_hot();
   });
 }
@@ -94,30 +94,29 @@ scheduleSetHour();
 
 //隔一天汇总一次当天提取结果
 function scheduleSetDay() {
-  setInterval(function () {
+  h = schedule.scheduleJob("59 59 23 * * *", function () {
     j.cancel();
     //使用lodash的isEqual方法去重
-    console.log(arr.length)
     var uniqHolderArr = _.uniqWith(arr, _.isEqual);
     getDayFile(uniqHolderArr);
     arr = [];
-    scheduleSetHour()
-  }, 50000);
+    scheduleSetHour();
+  });
 }
 scheduleSetDay();
 
 // 生成汇总文件
-var is = 0
 function getDayFile(infoArr) {
   let dateNow = moment(new Date().getTime()).format("YYYY-MM-DD");
-  writeIn(0, dateNow+'热点', infoArr);
+  writeIn(0, dateNow + "热点", infoArr);
 }
 function writeIn(count, dateNow, infoArr) {
-  count =  Number(count)
-  if (count === infoArr.length-1) return;
+  count = Number(count);
+  if (count === infoArr.length - 1) return;
   fs.appendFileSync(
     "hot/" + dateNow + ".md",
-    count +1+
+    count +
+      1 +
       ".[" +
       infoArr[count].title +
       "]" +
@@ -139,4 +138,3 @@ function writeIn(count, dateNow, infoArr) {
 App.listen("8088", () => {
   console.log("8088");
 });
-
