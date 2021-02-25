@@ -132,9 +132,11 @@ function writeIn(count, dateNow, infoArr) {
     }
   );
   count++;
+  // 递归写入搜集的条目
   writeIn(count, dateNow, infoArr);
 }
 
 App.listen("8088", () => {
   console.log("8088");
 });
+
