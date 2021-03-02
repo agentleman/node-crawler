@@ -94,7 +94,7 @@ scheduleSetHour();
 
 //隔一天汇总一次当天提取结果
 function scheduleSetDay() {
-  h = schedule.scheduleJob("59 59 23 * * *", function () {
+  h = schedule.scheduleJob("10 59 23 * * *", function () {
     j.cancel();
     //使用lodash的isEqual方法去重
     var uniqHolderArr = _.uniqWith(arr, _.isEqual);
